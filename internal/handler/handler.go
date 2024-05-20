@@ -2,9 +2,10 @@ package handler
 
 import (
 	"net/http"
-	"oatorrent/internal/pkg/bt"
-	"oatorrent/internal/pkg/conf"
-	"oatorrent/internal/repo"
+
+	"github.com/luckycatx/oat-tracker/internal/pkg/bt"
+	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
+	"github.com/luckycatx/oat-tracker/internal/repo"
 
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/gin-gonic/gin"

@@ -1,4 +1,4 @@
-module oatorrent
+module github.com/luckycatx/oat-tracker
 
 go 1.22.3
 

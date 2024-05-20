@@ -1,5 +1,5 @@
-# oatorrent-tracker
-A private tracker for oatorrent client
+# oat-tracker
+A private tracker for github.com/luckycatx/oat-tracker client
 
 ## Build
 ```shell

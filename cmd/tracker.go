@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"oatorrent/internal/handler"
-	"oatorrent/internal/pkg/conf"
+
+	"github.com/luckycatx/oat-tracker/internal/handler"
+	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
 
 	"github.com/gin-gonic/gin"
 )

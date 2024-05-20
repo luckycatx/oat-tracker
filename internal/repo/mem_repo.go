@@ -1,10 +1,11 @@
 package repo
 
 import (
-	"oatorrent/internal/pkg/bt"
-	"oatorrent/internal/pkg/conf"
 	"sync"
 	"time"
+
+	"github.com/luckycatx/oat-tracker/internal/pkg/bt"
+	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
 
 	"github.com/minio/highwayhash"
 )
