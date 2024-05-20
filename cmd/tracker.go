@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/luckycatx/oat-tracker/internal/handler"
@@ -12,7 +11,6 @@ import (
 
 func main() {
 	var cfg = conf.Load()
-	fmt.Println(cfg)
 	var handler = handler.NewHandler(cfg)
 
 	var r = gin.Default()
