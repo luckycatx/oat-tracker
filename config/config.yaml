@@ -1,5 +1,5 @@
 host:
-port: 8080
+port: 6969
 tracker_id: "oat"
 interval: 3600 # in seconds
 min_interval: 120 # in seconds

@@ -10,3 +10,7 @@ build:
 update:
 	go get -u ./...
 	go mod tidy
+
+.PHONY: run
+run:
+	go run ./cmd/...
