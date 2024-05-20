@@ -3,10 +3,10 @@ package bt
 type AnnounceReq struct {
 	InfoHash   string `form:"info_hash" binding:"required"`
 	PeerID     string `form:"peer_id"`
-	Port       uint16 `form:"port" binding:"required"`
+	Port       uint16 `form:"port" binding:"required,number"`
 	Uploaded   uint   `form:"uploaded"`
-	Downloaded uint   `form:"downloaded"`              // in bytes
-	Left       uint   `form:"left" binding:"required"` // in bytes
+	Downloaded uint   `form:"downloaded"`                     // in bytes
+	Left       *uint  `form:"left" binding:"required,number"` // in bytes | type *uint in order to accept zero value
 	Compact    bool   `form:"compact"`
 	NoPeerID   bool   `form:"no_peer_id"`
 	Event      string `form:"event"`

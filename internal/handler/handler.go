@@ -53,11 +53,11 @@ func (h *Handler) Announce(c *gin.Context) {
 	switch req.Event {
 	// case "started": behaves the same as default
 	case "stopped":
-		h.repo.DeletePeer(room, req.InfoHash, req_peer, req.Left == 0)
+		h.repo.DeletePeer(room, req.InfoHash, req_peer, *req.Left == 0)
 	case "completed":
 		h.repo.GraduateLeecher(room, req.InfoHash, req_peer)
 	default:
-		h.repo.PutPeer(room, req.InfoHash, req_peer, req.Left == 0)
+		h.repo.PutPeer(room, req.InfoHash, req_peer, *req.Left == 0)
 	}
 
 	interval, min_interval := h.cfg.Interval, h.cfg.MinInterval
@@ -68,7 +68,7 @@ func (h *Handler) Announce(c *gin.Context) {
 		min_interval /= 2
 	}
 
-	var peers = h.repo.GetPeers(room, req.InfoHash, req_peer, req.Left == 0, req.NumWant)
+	var peers = h.repo.GetPeers(room, req.InfoHash, req_peer, *req.Left == 0, req.NumWant)
 	var packed_peer any
 	if req.Compact {
 		packed_peer = make([]byte, 0, len(peers))
