@@ -1,0 +1,7 @@
+host:
+port: 8080
+tracker_id: "oat"
+interval: 3600 # in seconds
+min_interval: 120 # in seconds
+num_shard: 512
+peer_lifetime: 1800 # in seconds
