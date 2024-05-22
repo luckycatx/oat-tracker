@@ -16,7 +16,7 @@ type Repoer interface {
 	GetPeers(room, info_hash string, peer *bt.Peer, seed bool, num_want uint) []*bt.Peer
 	DeletePeer(room, info_hash string, peer *bt.Peer, seed bool)
 	GraduateLeecher(room, info_hash string, peer *bt.Peer)
-	CountPeers(room, info_hash string, v6 bool) (num_seeders, num_snachers, num_leechers uint)
+	CountPeers(room, info_hash string) (num_seeders, num_snachers, num_leechers uint)
 	Cleanup()
 }
 
@@ -63,7 +63,7 @@ func (h *Handler) Announce(c *gin.Context) {
 
 	interval, min_interval := h.cfg.Interval, h.cfg.MinInterval
 
-	num_seeders, _, num_leechers := h.repo.CountPeers(room, req.InfoHash, req_peer.Addr().Is6())
+	num_seeders, _, num_leechers := h.repo.CountPeers(room, req.InfoHash)
 	if num_seeders == 0 {
 		interval /= 2
 		min_interval /= 2
@@ -71,10 +71,15 @@ func (h *Handler) Announce(c *gin.Context) {
 
 	var peers = h.repo.GetPeers(room, req.InfoHash, req_peer, *req.Left == 0, req.NumWant)
 	var packed_peer any
+	var packed_peer6 []byte
 	if req.Compact {
 		packed_peer = make([]byte, 0, len(peers))
 		for _, peer := range peers {
+			if peer.AddrPort.Addr().Is4() {
 			packed_peer = append(packed_peer.([]byte), peer.PackToBin()...)
+			} else {
+				packed_peer6 = append(packed_peer6, peer.PackToBin()...)
+			}
 		}
 	} else {
 		packed_peer = make([]map[string]any, 0, len(peers))
@@ -90,6 +95,7 @@ func (h *Handler) Announce(c *gin.Context) {
 		Complete:    num_seeders,
 		Incomplete:  num_leechers,
 		Peers:       packed_peer,
+		Peers6:      packed_peer6,
 	}
 	resp_data, err := bencode.Marshal(resp)
 	if err != nil {
@@ -107,12 +113,11 @@ func (h *Handler) Scrape(c *gin.Context) {
 	}
 	var resp = &bt.ScrapeResp{Files: make(map[string]bt.Stats)}
 	for _, info_hash := range req.InfoHashes {
-		s, sn, l := h.repo.CountPeers("", info_hash, false)
-		s_v6, sn_v6, l_v6 := h.repo.CountPeers("", info_hash, true)
+		s, sn, l := h.repo.CountPeers("", info_hash)
 		var stats = &bt.Stats{
-			Complete:   s + s_v6,
-			Downloaded: sn + sn_v6,
-			Incomplete: l + l_v6,
+			Complete:   s,
+			Downloaded: sn,
+			Incomplete: l,
 		}
 		resp.Files[info_hash] = *stats
 	}
@@ -122,4 +127,8 @@ func (h *Handler) Scrape(c *gin.Context) {
 		return
 	}
 	c.String(http.StatusOK, string(resp_data))
+}
+
+func (h *Handler) Cleanup() {
+	h.repo.Cleanup()
 }

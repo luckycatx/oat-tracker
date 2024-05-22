@@ -32,8 +32,8 @@ type swarm struct {
 }
 
 func NewMemRepo(shard_size int) *MemRepo {
-	var mem_repo = &MemRepo{shards: make([]*shard, shard_size*2)}
-	for i := range shard_size * 2 {
+	var mem_repo = &MemRepo{shards: make([]*shard, shard_size)}
+	for i := range shard_size {
 		mem_repo.shards[i] = &shard{
 			swarms:        make(map[string]swarm),
 			num_snatchers: make(map[string]uint),
@@ -42,16 +42,13 @@ func NewMemRepo(shard_size int) *MemRepo {
 	return mem_repo
 }
 
-func (mr *MemRepo) ShardIndex(room, info_hash string, v6 bool) int {
+func (mr *MemRepo) ShardIndex(room, info_hash string) int {
 	var idx = int(highwayhash.Sum64([]byte(room+info_hash), make([]byte, 32)) % uint64(len(mr.shards)))
-	if v6 {
-		idx += len(mr.shards) / 2
-	}
 	return idx
 }
 
 func (mr *MemRepo) PutPeer(room, info_hash string, peer *bt.Peer, seed bool) {
-	var idx = mr.ShardIndex(room, info_hash, peer.Addr().Is6())
+	var idx = mr.ShardIndex(room, info_hash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
@@ -67,7 +64,7 @@ func (mr *MemRepo) PutPeer(room, info_hash string, peer *bt.Peer, seed bool) {
 }
 
 func (mr *MemRepo) GetPeers(room, info_hash string, peer *bt.Peer, seed bool, num_want uint) []*bt.Peer {
-	var idx = mr.ShardIndex(room, info_hash, peer.Addr().Is6())
+	var idx = mr.ShardIndex(room, info_hash)
 	mr.shards[idx].RLock()
 	defer mr.shards[idx].RUnlock()
 
@@ -97,7 +94,7 @@ func (mr *MemRepo) GetPeers(room, info_hash string, peer *bt.Peer, seed bool, nu
 }
 
 func (mr *MemRepo) DeletePeer(room, info_hash string, peer *bt.Peer, seed bool) {
-	var idx = mr.ShardIndex(room, info_hash, peer.Addr().Is6())
+	var idx = mr.ShardIndex(room, info_hash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
@@ -113,7 +110,7 @@ func (mr *MemRepo) DeletePeer(room, info_hash string, peer *bt.Peer, seed bool) 
 }
 
 func (mr *MemRepo) GraduateLeecher(room, info_hash string, peer *bt.Peer) {
-	var idx = mr.ShardIndex(room, info_hash, peer.Addr().Is6())
+	var idx = mr.ShardIndex(room, info_hash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
@@ -126,8 +123,8 @@ func (mr *MemRepo) GraduateLeecher(room, info_hash string, peer *bt.Peer) {
 	mr.shards[idx].num_snatchers[info_hash]++
 }
 
-func (mr *MemRepo) CountPeers(room, info_hash string, v6 bool) (num_seeders, num_snachers, num_leechers uint) {
-	var idx = mr.ShardIndex(room, info_hash, v6)
+func (mr *MemRepo) CountPeers(room, info_hash string) (num_seeders, num_snachers, num_leechers uint) {
+	var idx = mr.ShardIndex(room, info_hash)
 	mr.shards[idx].RLock()
 	defer mr.shards[idx].RUnlock()
 

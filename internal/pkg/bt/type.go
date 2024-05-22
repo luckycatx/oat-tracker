@@ -24,6 +24,7 @@ type AnnounceResp struct {
 	Complete    uint   `bencode:"complete"`
 	Incomplete  uint   `bencode:"incomplete"`
 	Peers       any    `bencode:"peers"` // Dictionary model or Binary model (IPv4 or IPv6)
+	Peers6      []byte `bencode:"peers6,omitempty"` // Binary model for IPv6
 }
 
 type Stats struct {
