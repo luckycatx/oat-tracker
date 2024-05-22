@@ -33,7 +33,7 @@ type swarm struct {
 
 func NewMemRepo(shard_size int) *MemRepo {
 	var mem_repo = &MemRepo{shards: make([]*shard, shard_size*2)}
-	for i := 0; i < shard_size*2; i++ {
+	for i := range shard_size * 2 {
 		mem_repo.shards[i] = &shard{
 			swarms:        make(map[string]swarm),
 			num_snatchers: make(map[string]uint),
