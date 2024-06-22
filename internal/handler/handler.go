@@ -28,7 +28,7 @@ type Handler struct {
 	repo Repoer
 }
 
-func NewHandler(cfg *conf.Config) *Handler {
+func New(cfg *conf.Config) *Handler {
 	return &Handler{
 		cfg:  cfg,
 		repo: repo.NewMemRepo(cfg.NumShard),
@@ -46,7 +46,7 @@ func (h *Handler) Announce(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var req_peer = bt.NewPeer(req.PeerID, req.IP, req.Port)
+	var req_peer = bt.New(req.PeerID, req.IP, req.Port)
 	var room = c.Param("room")
 	if room == "" {
 		c.JSON(400, gin.H{"error": "room is required"})
@@ -76,7 +76,7 @@ func (h *Handler) Announce(c *gin.Context) {
 		packed_peer = make([]byte, 0, len(peers))
 		for _, peer := range peers {
 			if peer.AddrPort.Addr().Is4() {
-			packed_peer = append(packed_peer.([]byte), peer.PackToBin()...)
+				packed_peer = append(packed_peer.([]byte), peer.PackToBin()...)
 			} else {
 				packed_peer6 = append(packed_peer6, peer.PackToBin()...)
 			}

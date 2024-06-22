@@ -1,5 +1,5 @@
 # oat-tracker
-A private tracker for github.com/luckycatx/oat-tracker client
+A private tracker that shares within a custom room
 
 ## Build
 ```shell

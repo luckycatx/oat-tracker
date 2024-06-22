@@ -23,7 +23,7 @@ type AnnounceResp struct {
 	TrackerID   string `bencode:"tracker_id"`
 	Complete    uint   `bencode:"complete"`
 	Incomplete  uint   `bencode:"incomplete"`
-	Peers       any    `bencode:"peers"` // Dictionary model or Binary model (IPv4 or IPv6)
+	Peers       any    `bencode:"peers"`            // Dictionary model or Binary model (both IPv4 and IPv6)
 	Peers6      []byte `bencode:"peers6,omitempty"` // Binary model for IPv6
 }
 

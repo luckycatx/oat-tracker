@@ -11,7 +11,7 @@ import (
 
 func main() {
 	var cfg = conf.Load()
-	var handler = handler.NewHandler(cfg)
+	var handler = handler.New(cfg)
 
 	var r = gin.Default()
 	// r.Use(gin.Logger())
