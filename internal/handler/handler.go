@@ -5,6 +5,7 @@ import (
 
 	"github.com/luckycatx/oat-tracker/internal/pkg/bt"
 	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
+	"github.com/luckycatx/oat-tracker/internal/pkg/info"
 	"github.com/luckycatx/oat-tracker/internal/repo"
 
 	"github.com/anacrolix/torrent/bencode"
@@ -29,9 +30,12 @@ type Handler struct {
 }
 
 func New(cfg *conf.Config) *Handler {
+	r := repo.NewMemRepo(cfg.NumShard)
+	// Use for count peers
+	info.Counter = r
 	return &Handler{
 		cfg:  cfg,
-		repo: repo.NewMemRepo(cfg.NumShard),
+		repo: r,
 	}
 }
 
@@ -51,6 +55,14 @@ func (h *Handler) Announce(c *gin.Context) {
 	if room == "" {
 		c.JSON(400, gin.H{"error": "room is required"})
 	}
+	// Record the room info
+	if _, ok := info.Infos[room]; !ok {
+		info.Infos[room] = make(info.Info)
+	}
+	if _, ok := info.Infos[room][req.InfoHash]; !ok {
+		info.Infos[room][req.InfoHash] = 0
+	}
+
 	switch req.Event {
 	// case "started": behaves the same as default
 	case "stopped":
