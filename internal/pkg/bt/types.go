@@ -38,5 +38,5 @@ type ScrapeReq struct {
 }
 
 type ScrapeResp struct {
-	Files map[string]Stats `bencode:"files"` // Map of info_hash to Stat
+	Files map[string]Stats `bencode:"files"` // Map of infohash to Stat
 }

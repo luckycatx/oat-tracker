@@ -26,6 +26,7 @@ type shard struct {
 }
 
 // Use map to store peers and their last seen time
+// int64 for storing Unix timestamp
 type swarm struct {
 	seeders  map[bt.Peer]int64
 	leechers map[bt.Peer]int64
