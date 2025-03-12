@@ -31,12 +31,9 @@ func tracker(out io.Writer) {
 	var handler = handler.New(cfg)
 	go handler.Cleanup()
 
-	gin.DefaultWriter = out
-	gin.DefaultErrorWriter = out
+	gin.DefaultWriter, gin.DefaultErrorWriter = out, out
 	var r = gin.New()
-
 	r.Use(gin.Logger(), gin.Recovery())
-
 	r.GET("/:room/announce", pausable(handler.Announce))
 	r.GET("/:room/scrape", pausable(handler.Scrape))
 
