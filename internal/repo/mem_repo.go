@@ -16,7 +16,7 @@ type MemRepo struct {
 	shards []*shard
 }
 
-// Hash key is the hash of info_hash + room
+// Hash key is the hash of infoHash + room
 // Use RWMap instead of sync.Map because
 // there's a certain level of writing and deleting
 type shard struct {
@@ -32,31 +32,31 @@ type swarm struct {
 	leechers map[bt.Peer]int64
 }
 
-func NewMemRepo(shard_size int) *MemRepo {
-	var mem_repo = &MemRepo{shards: make([]*shard, shard_size)}
-	for i := range shard_size {
-		mem_repo.shards[i] = &shard{
+func NewMemRepo(shardSize int) *MemRepo {
+	var memRepo = &MemRepo{shards: make([]*shard, shardSize)}
+	for i := range shardSize {
+		memRepo.shards[i] = &shard{
 			swarms:       make(map[string]swarm),
 			numSnatchers: make(map[string]uint),
 		}
 	}
-	return mem_repo
+	return memRepo
 }
 
-func (mr *MemRepo) ShardIndex(room, info_hash string) int {
-	var idx = int(highwayhash.Sum64([]byte(room+info_hash), make([]byte, 32)) % uint64(len(mr.shards)))
+func (mr *MemRepo) ShardIndex(room, infoHash string) int {
+	var idx = int(highwayhash.Sum64([]byte(room+infoHash), make([]byte, 32)) % uint64(len(mr.shards)))
 	return idx
 }
 
-func (mr *MemRepo) PutPeer(room, info_hash string, peer *bt.Peer, seed bool) {
-	var idx = mr.ShardIndex(room, info_hash)
+func (mr *MemRepo) PutPeer(room, infoHash string, peer *bt.Peer, seed bool) {
+	var idx = mr.ShardIndex(room, infoHash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
-	if _, ok := mr.shards[idx].swarms[info_hash]; !ok {
-		mr.shards[idx].swarms[info_hash] = swarm{seeders: make(map[bt.Peer]int64), leechers: make(map[bt.Peer]int64)}
+	if _, ok := mr.shards[idx].swarms[infoHash]; !ok {
+		mr.shards[idx].swarms[infoHash] = swarm{seeders: make(map[bt.Peer]int64), leechers: make(map[bt.Peer]int64)}
 	}
-	var sw = mr.shards[idx].swarms[info_hash]
+	var sw = mr.shards[idx].swarms[infoHash]
 	if seed {
 		sw.seeders[*peer] = time.Now().Unix()
 	} else {
@@ -64,18 +64,18 @@ func (mr *MemRepo) PutPeer(room, info_hash string, peer *bt.Peer, seed bool) {
 	}
 }
 
-func (mr *MemRepo) GetPeers(room, info_hash string, peer *bt.Peer, seed bool, num_want uint) []*bt.Peer {
-	var idx = mr.ShardIndex(room, info_hash)
+func (mr *MemRepo) GetPeers(room, infoHash string, peer *bt.Peer, seed bool, numWant uint) []*bt.Peer {
+	var idx = mr.ShardIndex(room, infoHash)
 	mr.shards[idx].RLock()
 	defer mr.shards[idx].RUnlock()
 
-	var sw = mr.shards[idx].swarms[info_hash]
-	var peers = make([]*bt.Peer, 0, num_want)
+	var sw = mr.shards[idx].swarms[infoHash]
+	var peers = make([]*bt.Peer, 0, numWant)
 	// Seeder is not interested in other seeders
 	if !seed {
 		for p := range sw.seeders {
 			peers = append(peers, &p)
-			if uint(len(peers)) >= num_want {
+			if uint(len(peers)) >= numWant {
 				break
 			}
 		}
@@ -86,7 +86,7 @@ func (mr *MemRepo) GetPeers(room, info_hash string, peer *bt.Peer, seed bool, nu
 			continue
 		}
 		peers = append(peers, &p)
-		if uint(len(peers)) >= num_want {
+		if uint(len(peers)) >= numWant {
 			break
 		}
 	}
@@ -94,12 +94,12 @@ func (mr *MemRepo) GetPeers(room, info_hash string, peer *bt.Peer, seed bool, nu
 	return peers
 }
 
-func (mr *MemRepo) DeletePeer(room, info_hash string, peer *bt.Peer, seed bool) {
-	var idx = mr.ShardIndex(room, info_hash)
+func (mr *MemRepo) DeletePeer(room, infoHash string, peer *bt.Peer, seed bool) {
+	var idx = mr.ShardIndex(room, infoHash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
-	sw, ok := mr.shards[idx].swarms[info_hash]
+	sw, ok := mr.shards[idx].swarms[infoHash]
 	if !ok {
 		return
 	}
