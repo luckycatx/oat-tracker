@@ -14,9 +14,11 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+
 	"github.com/luckycatx/oat-tracker/internal/pkg/info"
-	"github.com/luckycatx/oat-tracker/internal/pkg/pause"
 )
+
+var Paused bool
 
 func Run(w *app.Window, trk func(io.Writer)) error {
 	var running bool
@@ -103,17 +105,17 @@ func Run(w *app.Window, trk func(io.Writer)) error {
 						return layout.Flex{Axis: layout.Horizontal, Spacing: layout.SpaceBetween}.Layout(gtx,
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								btn := material.Button(th, &pause_btn, "Pause")
-								if !pause.Paused() {
+								if !Paused {
 									btn.Text = "Pause"
 								} else {
 									btn.Text = "Resume"
 								}
 								for pause_btn.Clicked(gtx) {
-									if !pause.Paused() {
-										pause.Pause()
+									if !Paused {
+										Paused = true
 										log.Print("Server paused...")
 									} else {
-										pause.Resume()
+										Paused = false
 										log.Print("Server resumed...")
 									}
 								}

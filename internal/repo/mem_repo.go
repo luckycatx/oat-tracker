@@ -4,13 +4,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/minio/highwayhash"
+
 	"github.com/luckycatx/oat-tracker/internal/pkg/bt"
 	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
-
-	"github.com/minio/highwayhash"
 )
 
-var peer_lifetime = conf.Load().PeerLifetime
+var peerLifeTime = conf.Load().PeerLifetime
 
 type MemRepo struct {
 	shards []*shard
@@ -20,8 +20,8 @@ type MemRepo struct {
 // Use RWMap instead of sync.Map because
 // there's a certain level of writing and deleting
 type shard struct {
-	swarms        map[string]swarm
-	num_snatchers map[string]uint
+	swarms       map[string]swarm
+	numSnatchers map[string]uint
 	sync.RWMutex
 }
 
@@ -36,8 +36,8 @@ func NewMemRepo(shard_size int) *MemRepo {
 	var mem_repo = &MemRepo{shards: make([]*shard, shard_size)}
 	for i := range shard_size {
 		mem_repo.shards[i] = &shard{
-			swarms:        make(map[string]swarm),
-			num_snatchers: make(map[string]uint),
+			swarms:       make(map[string]swarm),
+			numSnatchers: make(map[string]uint),
 		}
 	}
 	return mem_repo
@@ -110,32 +110,32 @@ func (mr *MemRepo) DeletePeer(room, info_hash string, peer *bt.Peer, seed bool) 
 	}
 }
 
-func (mr *MemRepo) GraduateLeecher(room, info_hash string, peer *bt.Peer) {
-	var idx = mr.ShardIndex(room, info_hash)
+func (mr *MemRepo) GraduateLeecher(room, infoHash string, peer *bt.Peer) {
+	var idx = mr.ShardIndex(room, infoHash)
 	mr.shards[idx].Lock()
 	defer mr.shards[idx].Unlock()
 
-	if _, ok := mr.shards[idx].swarms[info_hash]; !ok {
-		mr.shards[idx].swarms[info_hash] = swarm{seeders: make(map[bt.Peer]int64), leechers: make(map[bt.Peer]int64)}
+	if _, ok := mr.shards[idx].swarms[infoHash]; !ok {
+		mr.shards[idx].swarms[infoHash] = swarm{seeders: make(map[bt.Peer]int64), leechers: make(map[bt.Peer]int64)}
 	}
-	var sw = mr.shards[idx].swarms[info_hash]
+	var sw = mr.shards[idx].swarms[infoHash]
 	delete(sw.leechers, *peer)
 	sw.seeders[*peer] = time.Now().Unix()
-	mr.shards[idx].num_snatchers[info_hash]++
+	mr.shards[idx].numSnatchers[infoHash]++
 }
 
-func (mr *MemRepo) CountPeers(room, info_hash string) (num_seeders, num_snachers, num_leechers uint) {
-	var idx = mr.ShardIndex(room, info_hash)
+func (mr *MemRepo) CountPeers(room, infoHash string) (numSeeders, numSnachers, numLeechers uint) {
+	var idx = mr.ShardIndex(room, infoHash)
 	mr.shards[idx].RLock()
 	defer mr.shards[idx].RUnlock()
 
-	sw, ok := mr.shards[idx].swarms[info_hash]
+	sw, ok := mr.shards[idx].swarms[infoHash]
 	if !ok {
 		return
 	}
-	num_seeders, num_snachers, num_leechers =
+	numSeeders, numSnachers, numLeechers =
 		uint(len(sw.seeders)),
-		(mr.shards[idx].num_snatchers[info_hash]),
+		(mr.shards[idx].numSnatchers[infoHash]),
 		uint(len(sw.leechers))
 	return
 }
@@ -145,19 +145,19 @@ func (mr *MemRepo) Cleanup() {
 		time.Sleep(5 * time.Minute)
 		for _, shard := range mr.shards {
 			shard.Lock()
-			for info_hash, sw := range shard.swarms {
-				for p, last_seen := range sw.seeders {
-					if time.Now().Unix()-last_seen > peer_lifetime {
+			for ih, sw := range shard.swarms {
+				for p, lastSeen := range sw.seeders {
+					if time.Now().Unix()-lastSeen > peerLifeTime {
 						delete(sw.seeders, p)
 					}
 				}
-				for p, last_seen := range sw.leechers {
-					if time.Now().Unix()-last_seen > peer_lifetime {
+				for p, lastSeen := range sw.leechers {
+					if time.Now().Unix()-lastSeen > peerLifeTime {
 						delete(sw.leechers, p)
 					}
 				}
 				if len(sw.seeders) == 0 && len(sw.leechers) == 0 {
-					delete(shard.swarms, info_hash)
+					delete(shard.swarms, ih)
 				}
 			}
 			shard.Unlock()

@@ -3,30 +3,18 @@ package handler
 import (
 	"net/http"
 
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/gin-gonic/gin"
+
 	"github.com/luckycatx/oat-tracker/internal/pkg/bt"
 	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
 	"github.com/luckycatx/oat-tracker/internal/pkg/info"
 	"github.com/luckycatx/oat-tracker/internal/repo"
-
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/gin-gonic/gin"
 )
 
-type Repoer interface {
-	PutPeer(room, info_hash string, peer *bt.Peer, seed bool)
-	GetPeers(room, info_hash string, peer *bt.Peer, seed bool, num_want uint) []*bt.Peer
-	DeletePeer(room, info_hash string, peer *bt.Peer, seed bool)
-	GraduateLeecher(room, info_hash string, peer *bt.Peer)
-	CountPeers(room, info_hash string) (num_seeders, num_snachers, num_leechers uint)
-	Cleanup()
-}
-
-// Interface check
-var _ Repoer = (*repo.MemRepo)(nil)
-
 type Handler struct {
+	repo repo.Repoer
 	cfg  *conf.Config
-	repo Repoer
 }
 
 func New(cfg *conf.Config) *Handler {

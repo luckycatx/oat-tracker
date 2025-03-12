@@ -6,13 +6,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/luckycatx/oat-tracker/internal/handler"
-	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
-	"github.com/luckycatx/oat-tracker/internal/pkg/pause"
-	"github.com/luckycatx/oat-tracker/internal/view"
-
 	"gioui.org/app"
 	"github.com/gin-gonic/gin"
+
+	"github.com/luckycatx/oat-tracker/internal/handler"
+	"github.com/luckycatx/oat-tracker/internal/pkg/conf"
+	"github.com/luckycatx/oat-tracker/internal/view"
 )
 
 func main() {
@@ -46,7 +45,7 @@ func tracker(out io.Writer) {
 
 func pausable(f gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if pause.Paused() {
+		if view.Paused {
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"error": "Tracker is paused",
 			})

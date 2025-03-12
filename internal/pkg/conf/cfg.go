@@ -20,12 +20,12 @@ func Load() *Config {
 	var cfg = &Config{}
 	viper.AutomaticEnv()
 
-	viper.SetConfigName("config")
+	viper.SetConfigName("cfg")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("./conf")
 	// Path for dev usage
-	viper.AddConfigPath("../config")
+	viper.AddConfigPath("../conf")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Error reading config file: ", err)
